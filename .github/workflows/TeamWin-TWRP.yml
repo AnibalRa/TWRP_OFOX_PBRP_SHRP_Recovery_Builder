@@ -63,6 +63,7 @@ jobs:
   build:
     name: Build TWRP by ${{ github.actor }}
     runs-on: self-hosted
+    container: ubuntu:20.04
     if: github.event.repository.owner.id == github.event.sender.id
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
