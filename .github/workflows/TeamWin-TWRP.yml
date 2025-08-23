@@ -152,7 +152,7 @@ jobs:
     - name: Building Image 
       run: |
         cd android-recovery
-        source build/envsetup.sh
+        . build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
         lunch ${{ inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ inputs.BUILD_TARGET }}image -j$(nproc --all)
         echo "Done building your ${{ inputs.BUILD_TARGET }}.img"
