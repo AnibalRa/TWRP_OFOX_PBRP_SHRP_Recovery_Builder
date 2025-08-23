@@ -150,6 +150,7 @@ jobs:
         sudo apt-get -y install python2 python-is-python2
 
     - name: Building Image 
+      shell: bash
       run: |
         cd android-recovery
         . build/envsetup.sh
