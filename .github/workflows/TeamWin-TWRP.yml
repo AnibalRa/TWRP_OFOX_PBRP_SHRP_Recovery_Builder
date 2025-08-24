@@ -20,14 +20,14 @@ on:
         - twrp-6.0
         - twrp-5.1
         - twrp-4.4-deprecated
-      DEVICE_TREE:
-        description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
-        required: true
-        default: 'https://github.com/username/repo'
-      DEVICE_TREE_BRANCH:
-        description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
-        required: true
-        default: 'enter_your_branch'
+#      DEVICE_TREE:
+#        description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
+#        required: true
+#        default: 'https://github.com/username/repo'
+#      DEVICE_TREE_BRANCH:
+#        description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
+#        required: true
+#        default: 'enter_your_branch'
       DEVICE_PATH:
         description: 'DEVICE_PATH'
         required: true
@@ -133,16 +133,24 @@ jobs:
         git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
         repo init --depth=1 -u ${{ env.MANIFEST }} -b ${{ inputs.MANIFEST_BRANCH }}
 
+    - name: Create local manifest
+      run: |
+        mkdir -p .repo/local_manifests
+        cat << EOF > .repo/local_manifests/roomservice.xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <manifest>
+          <project path="${{ inputs.device_path }}" name="${{ inputs.device_tree }}" remote="github" revision="${{ inputs.device_tree_branch }}" />
+        </manifest>        EOF
     - name: Repo Sync
       run: |
         cd android-recovery
         repo sync -j$(nproc --all) --force-sync
       
-    - name: Clone Device Tree
-      run: |
-        cd android-recovery
-        git clone ${{ inputs.DEVICE_TREE }} -b ${{ inputs.DEVICE_TREE_BRANCH }} ./${{ inputs.DEVICE_PATH }}
-        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
+#    - name: Clone Device Tree
+#      run: |
+#        cd android-recovery
+#        git clone ${{ inputs.DEVICE_TREE }} -b ${{ inputs.DEVICE_TREE_BRANCH }} ./${{ inputs.DEVICE_PATH }}
+#        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
     - name: Installing python2 for legacy builds
       if: env.CHECK_LEGACY_BRANCH == 'true'
