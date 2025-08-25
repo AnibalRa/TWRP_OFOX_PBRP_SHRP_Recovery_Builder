@@ -20,29 +20,29 @@ on:
         - twrp-6.0
         - twrp-5.1
         - twrp-4.4-deprecated
-#      DEVICE_TREE:
-#        description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
-#        required: true
-#        default: 'https://github.com/username/repo'
-#      DEVICE_TREE_BRANCH:
-#        description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
-#        required: true
-#        default: 'enter_your_branch'
+      DEVICE_TREE:
+        description: 'Repositorio DEVICE_TREE' # Your already made Device Tree for TWRP
+        required: false
+        default: 'AnibalRa/TWRP_OFOX_PBRP_SHRP_Recovery_Builder'
+      DEVICE_TREE_BRANCH:
+        description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
+        required: false
+        default: 'main'
       DEVICE_PATH:
         description: 'DEVICE_PATH'
-        required: true
-        default: 'device/'
+        required: false
+        default: 'device/elephone/u3h'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
-        required: true
-        default: ''
+        required: false
+        default: 'u3H'
       MAKEFILE_NAME:
         description: 'MAKEFILE_NAME (without including .mk, Example: omni_7304F)'
-        required: true
-        default: 'omni_'
+        required: false
+        default: 'omni_u3H'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
-        required: true
+        required: false
         default: 'recovery'
         type: choice
         options:
@@ -139,8 +139,10 @@ jobs:
         cat << EOF > .repo/local_manifests/roomservice.xml
         <?xml version="1.0" encoding="UTF-8"?>
         <manifest>
-          <project path="${{ inputs.device_path }}" name="${{ inputs.device_tree }}" remote="github" revision="${{ inputs.device_tree_branch }}" />
-        </manifest>        EOF
+          <project path="${{ inputs.DEVICE_PATH }}" name="${{ inputs.DEVICE_TREE }}" remote="github" revision="${{ inputs.DEVICE_TREE_BRANCH }}" />
+        </manifest>
+        EOF
+    
     - name: Repo Sync
       run: |
         cd android-recovery
