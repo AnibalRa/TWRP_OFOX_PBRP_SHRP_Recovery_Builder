@@ -35,11 +35,11 @@ on:
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: false
-        default: 'u3H'
+        default: 'u3h'
       MAKEFILE_NAME:
         description: 'MAKEFILE_NAME (without including .mk, Example: omni_7304F)'
         required: false
-        default: 'omni_u3H'
+        default: 'omni_u3h'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: false
@@ -135,8 +135,8 @@ jobs:
 
     - name: Create local manifest
       run: |
-        mkdir -p .repo/local_manifests
-        cat << EOF > .repo/local_manifests/roomservice.xml
+        mkdir -p android-recovery/.repo/local_manifests
+        cat << EOF > android-recovery/.repo/local_manifests/roomservice.xml
         <?xml version="1.0" encoding="UTF-8"?>
         <manifest>
           <project path="${{ inputs.DEVICE_PATH }}" name="${{ inputs.DEVICE_TREE }}" remote="github" revision="${{ inputs.DEVICE_TREE_BRANCH }}" />
@@ -164,7 +164,7 @@ jobs:
       run: |
         cd android-recovery
         . build/envsetup.sh
-        export ALLOW_MISSING_DEPENDENCIES=true
+#       export ALLOW_MISSING_DEPENDENCIES=true
         lunch ${{ inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ inputs.BUILD_TARGET }}image -j$(nproc --all)
         echo "Done building your ${{ inputs.BUILD_TARGET }}.img"
 
@@ -176,7 +176,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: TWRP-Image
-        path: out/target/product/u3h/recovery.img  
+        path: out/target/product/${{ inputs.DEVICE_NAME }}/recovery.img
         
     - name: Upload to Release
       if: success()
