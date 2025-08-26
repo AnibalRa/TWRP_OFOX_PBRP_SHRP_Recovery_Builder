@@ -5,8 +5,8 @@ on:
     inputs:
       MANIFEST_BRANCH:
         description: 'TWRP Manifest Branch'
-        required: true
-        default: ''
+        required: false
+        default: 'twrp-9.0'
         type: choice
         options:
         - twrp-14
@@ -20,6 +20,7 @@ on:
         - twrp-6.0
         - twrp-5.1
         - twrp-4.4-deprecated
+        
       DEVICE_TREE:
         description: 'Repositorio DEVICE_TREE' # Your already made Device Tree for TWRP
         required: false
