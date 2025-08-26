@@ -4,15 +4,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
-# Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
+# Inherit from the common full phone product configuration.
+$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 
 # Inherit from u3h device
 $(call inherit-product, device/elephone/u3h/device.mk)
-
-# Inherit from the common full phone product configuration.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 
 # Product characteristics
 PRODUCT_NAME := omni_u3h
