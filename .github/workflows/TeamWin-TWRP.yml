@@ -147,7 +147,11 @@ jobs:
       run: |
         cd android-recovery
         repo sync -j$(nproc --all) --force-sync
-      
+
+    - name: Patching vendorsetup.sh
+      run: |
+        sed -i 's/roomservice.py/#roomservice.py/g' android-recovery/vendor/omni/vendorsetup.sh
+
 #    - name: Clone Device Tree
 #      run: |
 #        cd android-recovery
