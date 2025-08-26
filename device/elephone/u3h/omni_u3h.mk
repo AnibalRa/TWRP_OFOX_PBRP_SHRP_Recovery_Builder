@@ -9,12 +9,3 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 
 # Inherit from u3h device
 $(call inherit-product, device/elephone/u3h/device.mk)
-
-# Product characteristics
-PRODUCT_NAME := omni_u3h
-PRODUCT_DEVICE := u3h
-PRODUCT_BRAND := elephone
-PRODUCT_MANUFACTURER := elephone
-PRODUCT_MODEL := Elephone U3H
-
-PRODUCT_GMS_CLIENTID_BASE := android-elephone
