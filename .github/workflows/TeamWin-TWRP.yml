@@ -151,7 +151,7 @@ jobs:
 
     - name: Patching vendorsetup.sh
       run: |
-        sed -i '/roomservice.py/d android-recovery/vendor/omni/vendorsetup.sh
+        sed -i '/roomservice.py/d' android-recovery/vendor/omni/vendorsetup.sh
 
     - name: Installing python2 for legacy builds
       if: env.CHECK_LEGACY_BRANCH == 'true'
