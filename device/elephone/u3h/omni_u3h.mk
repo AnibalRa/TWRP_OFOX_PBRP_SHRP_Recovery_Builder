@@ -12,7 +12,7 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 $(call inherit-product, device/elephone/u3h/device.mk)
 
 # Inherit from the common full phone product configuration.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_phone.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 
 # Product characteristics
 PRODUCT_NAME := omni_u3h
