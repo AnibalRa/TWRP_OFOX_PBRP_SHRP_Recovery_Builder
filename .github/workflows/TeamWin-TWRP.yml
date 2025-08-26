@@ -151,13 +151,7 @@ jobs:
 
     - name: Patching vendorsetup.sh
       run: |
-        sed -i 's/roomservice.py/#roomservice.py/g' android-recovery/vendor/omni/vendorsetup.sh
-
-#    - name: Clone Device Tree
-#      run: |
-#        cd android-recovery
-#        git clone ${{ inputs.DEVICE_TREE }} -b ${{ inputs.DEVICE_TREE_BRANCH }} ./${{ inputs.DEVICE_PATH }}
-#        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        sed -i '/roomservice.py/d android-recovery/vendor/omni/vendorsetup.sh
 
     - name: Installing python2 for legacy builds
       if: env.CHECK_LEGACY_BRANCH == 'true'
@@ -181,7 +175,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: TWRP-Image
-        path: out/target/product/${{ inputs.DEVICE_NAME }}/recovery.img
+        path: android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/recovery.img
         
     - name: Upload to Release
       if: success()
