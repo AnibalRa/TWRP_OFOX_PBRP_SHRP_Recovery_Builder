@@ -148,11 +148,13 @@ jobs:
       run: |
         cd android-recovery
         repo sync -j$(nproc --all) --force-sync
+        cat .repo/manifests/default.xml
 
     - name: Patching vendorsetup.sh
       run: |
+        cat android-recovery/vendor/omni/vendorsetup.sh
         sed -i '/roomservice.py/d' android-recovery/vendor/omni/vendorsetup.sh
-
+    
     - name: Installing python2 for legacy builds
       if: env.CHECK_LEGACY_BRANCH == 'true'
       run: |
