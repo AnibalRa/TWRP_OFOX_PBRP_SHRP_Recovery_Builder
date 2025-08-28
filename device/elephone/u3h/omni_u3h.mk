@@ -8,4 +8,4 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 
 # Inherit from u3h device
-$(call inherit-product, device/elephone/u3h/device.mk)
+$(call inherit-product, $(LOCAL_PATH)/device.mk)
