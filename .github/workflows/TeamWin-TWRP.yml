@@ -9,7 +9,7 @@ on:
         default: 'u3h'
       brand:
         description: 'Device Brand'
-        required: false  
+        required: false
         default: 'elephone'
       twrp_branch:
         description: 'TWRP Branch'
@@ -61,12 +61,12 @@ jobs:
         cd twrp-build
         mkdir -p .repo/local_manifests
         cat > .repo/local_manifests/mediatek.xml << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <project path="hardware/mediatek" name="LineageOS/android_hardware_mediatek" remote="github" revision="lineage-17.1" />
-  <project path="vendor/mediatek" name="TeamWin/android_vendor_mediatek" remote="github" revision="android-10" />
-</manifest>
-EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <manifest>
+          <project path="hardware/mediatek" name="LineageOS/android_hardware_mediatek" remote="github" revision="lineage-17.1" />
+          <project path="vendor/mediatek" name="TeamWin/android_vendor_mediatek" remote="github" revision="android-10" />
+        </manifest>
+        EOF
 
     - name: Sync sources
       run: |
@@ -82,16 +82,13 @@ EOF
     - name: Prepare kernel and device trees
       run: |
         cd twrp-build
-        # Crear directorio para el kernel
         mkdir -p kernel/elephone/u3h
         cp ../device/elephone/u3h/u3h_stock.dts kernel/elephone/u3h/
         
-        # Compilar DTS a DTB (si dtc está disponible)
         if command -v dtc &> /dev/null; then
             dtc -I dts -O dtb -o device/elephone/u3h/dtb.img device/elephone/u3h/u3h_stock.dts || true
         fi
         
-        # Crear dtbo.img vacío si no existe
         if [ ! -f device/elephone/u3h/dtbo.img ]; then
             dd if=/dev/zero of=device/elephone/u3h/dtbo.img bs=1024 count=64
         fi
@@ -106,8 +103,6 @@ EOF
         cd twrp-build
         export ALLOW_MISSING_DEPENDENCIES=true
         export LC_ALL=C
-        
-        # Flags específicas para MediaTek y cifrado
         export TW_USE_TOOLBOX=true
         export TW_INCLUDE_CRYPTO=true
         export TW_INCLUDE_FBE=true
