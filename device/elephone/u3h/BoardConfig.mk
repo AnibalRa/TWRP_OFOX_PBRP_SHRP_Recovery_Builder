@@ -1,22 +1,35 @@
-#
-# Copyright (C) 2022 The Android Open Source Project
-#
-# SPDX-License-Identifier: Apache-2.0
-#
+# device/elephone/u3h/BoardConfig.mk
 
 # Arquitectura
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
-TARGET_CPU_ABI2 := 
+TARGET_CPU_ABI2 :=
 TARGET_CPU_VARIANT := cortex-a73
-TARGET_CPU_VARIANT_RECOVERY := cortex-a73
 
-# Chipset MediaTek
-BOARD_USES_MTK_HARDWARE := true
-BOARD_HAS_MTK_FM_RADIO := false
-MTK_INTERNAL_BOOTLOADER_SEARCH_PATH := bootloader/preloader_evb6771
-BOARD_HAVE_BL2 := true
+TARGET_2ND_ARCH := arm
+TARGET_2ND_ARCH_VARIANT := armv8-a
+TARGET_2ND_CPU_ABI := armeabi-v7a
+TARGET_2ND_CPU_ABI2 := armeabi
+TARGET_2ND_CPU_VARIANT := cortex-a53
+
+# Plataforma (MediaTek MT6771/P70)
+TARGET_BOARD_PLATFORM := mt6771
+TARGET_BOOTLOADER_BOARD_NAME := mt6771
+
+# Kernel (lo configuraremos después)
+BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2
+BOARD_KERNEL_BASE := 0x40078000
+BOARD_KERNEL_PAGESIZE := 2048
+BOARD_KERNEL_OFFSET := 0x00008000
+BOARD_RAMDISK_OFFSET := 0x14f88000
+BOARD_TAGS_OFFSET := 0x13f88000
+
+# TWRP básico
+TW_THEME := portrait_hdpi
+TW_EXTRA_LANGUAGES := true
+TW_SCREEN_BLANK_ON_BOOT := true
+TW_INPUT_BLACKLIST := "hbtp_vm"
 
 # Particiones y FStab
 TARGET_NO_RECOVERY := false
