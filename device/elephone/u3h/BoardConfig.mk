@@ -65,8 +65,12 @@ TW_STATUSBAR_HEIGHT := 90
 TW_USE_MODEL_INFO_FOR_DEVICE_ID := true
 TWRP_INCLUDE_LOGCAT := true
 
-# Encryption (Clave para resolver tu problema)
-TW_CRYPTO_FS_EXT4_WRITE_SUPPORT := true
-TW_CRYPTO_FS_FBE_ALLOW_VERIFY := true
+# Encryption (Clave para resolver tu problema - CONFIGURACIÓN CORREGIDA)
 TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_FBE := true
+TW_CRYPTO_USE_SYSTEM_VOLD := true
+TW_CRYPTO_SYSTEM_VOLD_MOUNT := /dev/block/platform/bootdevice/by-name/metadata
+TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
+TW_USE_KEYMASTER_4 := true
 TWRP_RECOVERY_KEYMASTER_VERSION := 4
+PLATFORM_SECURITY_PATCH := 2019-12-05
