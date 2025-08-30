@@ -1,10 +1,14 @@
-# device/elephone/u3h/BoardConfig.mk
+#
+# Copyright (C) 2022 The Android Open Source Project
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 
-# Arquitectura
+# Architecture
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
-TARGET_CPU_ABI2 :=
+TARGET_CPU_ABI2 := 
 TARGET_CPU_VARIANT := cortex-a73
 
 TARGET_2ND_ARCH := arm
@@ -13,46 +17,44 @@ TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := cortex-a53
 
-# Plataforma (MediaTek MT6771/P70)
+# Platform
 TARGET_BOARD_PLATFORM := mt6771
 TARGET_BOOTLOADER_BOARD_NAME := mt6771
 
-# Kernel (lo configuraremos después)
-BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2
-BOARD_KERNEL_BASE := 0x40078000
-BOARD_KERNEL_PAGESIZE := 2048
-BOARD_KERNEL_OFFSET := 0x00008000
-BOARD_RAMDISK_OFFSET := 0x14f88000
-BOARD_TAGS_OFFSET := 0x13f88000
+# Chipset MediaTek
+BOARD_USES_MTK_HARDWARE := true
+BOARD_HAS_MTK_FM_RADIO := false
+MTK_INTERNAL_BOOTLOADER_SEARCH_PATH := bootloader/preloader_evb6771
+BOARD_HAVE_BL2 := true
 
-# TWRP básico
-TW_THEME := portrait_hdpi
-TW_EXTRA_LANGUAGES := true
-TW_SCREEN_BLANK_ON_BOOT := true
-TW_INPUT_BLACKLIST := "hbtp_vm"
-
-# Particiones y FStab
+# Partitions
 TARGET_NO_RECOVERY := false
 TARGET_NO_SEPARATE_RECOVERY := true
 TARGET_RECOVERY_FSTAB := device/elephone/u3h/twrp.fstab
 TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 
-# Kernel (Generalmente para MT6771)
-BOARD_KERNEL_BASE := 0x40000000
-BOARD_KERNEL_OFFSET := 0x00008000
-BOARD_RAMDISK_OFFSET := 0x04000000
-BOARD_TAGS_OFFSET := 0x00000100
+# Kernel configuration for MediaTek MT6771
+TARGET_KERNEL_CONFIG := u3h_defconfig
+TARGET_KERNEL_SOURCE := kernel/elephone/u3h
+BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_HEADER_ARCH := arm64
+TARGET_KERNEL_VERSION := 4.4
+
+# Kernel parameters
+BOARD_KERNEL_BASE := 0x40078000
 BOARD_KERNEL_PAGESIZE := 2048
-BOARD_MKBOOTIMG_ARGS := --kernel_offset $(BOARD_KERNEL_OFFSET) --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_TAGS_OFFSET) --pagesize $(BOARD_KERNEL_PAGESIZE)
+BOARD_KERNEL_OFFSET := 0x00008000
+BOARD_RAMDISK_OFFSET := 0x14f88000
+BOARD_TAGS_OFFSET := 0x13f88000
+BOARD_MKBOOTIMG_ARGS := --kernel_offset $(BOARD_KERNEL_OFFSET) --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_TAGS_OFFSET)
 
-# Device Tree (Crucial)
-# Como tienes un dtbo.img separado, configuramos esto:
-BOARD_USES_GENERIC_DTB := false
+# Device Tree Blobs
 BOARD_KERNEL_SEPARATED_DTBO := true
-BOARD_DTB_OFFSET := 0x01000000
-BOARD_BOOTIMG_HEADER_VERSION := 2
+BOARD_PREBUILT_DTBOIMAGE := device/elephone/u3h/dtbo.img
+TARGET_PREBUILT_DTB := device/elephone/u3h/dtb.img
 
-# TWRP
+# TWRP Configuration
 TW_THEME := portrait_hdpi
 RECOVERY_SDCARD_ON_DATA := true
 TW_EXCLUDE_APEX := true
@@ -74,3 +76,15 @@ TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
 TW_USE_KEYMASTER_4 := true
 TWRP_RECOVERY_KEYMASTER_VERSION := 4
 PLATFORM_SECURITY_PATCH := 2019-12-05
+
+# Crypto flags for MediaTek
+TW_USE_TOOLBOX := true
+TW_INCLUDE_FASTBOOTD := true
+TW_INCLUDE_LIBRESETPROP := true
+
+# Storage
+TW_NO_USB_STORAGE := false
+TW_MTP_DEVICE := /dev/mtp_usb
+
+# Debug
+TARGET_USES_LOGD := true
