@@ -113,14 +113,14 @@ jobs:
         mka recoveryimage -j$(nproc --all)
 
     - name: Upload recovery image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: twrp-u3h-recovery
         path: twrp-build/out/target/product/$DEVICE/recovery.img
 
     - name: Upload build logs
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-logs-u3h
         path: twrp-build/out/error.log
