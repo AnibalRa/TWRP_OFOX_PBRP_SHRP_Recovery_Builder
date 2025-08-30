@@ -118,9 +118,12 @@ jobs:
         name: twrp-u3h-recovery
         path: twrp-build/out/target/product/$DEVICE/recovery.img
 
-    - name: Upload build logs
+    - name: Upload build logs and diagnostics
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: build-logs-u3h
-        path: twrp-build/out/error.log
+        name: build-diagnostics-u3h
+        path: |
+          twrp-build/out/error.log
+          twrp-build/out/verbose.log
+          twrp-build/build.log
