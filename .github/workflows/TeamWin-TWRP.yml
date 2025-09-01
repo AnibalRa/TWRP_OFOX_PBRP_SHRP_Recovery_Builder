@@ -1,129 +1,205 @@
-name: Build TWRP Recovery for Elephone U3H
+name: TeamWin [TWRP]
 
 on:
   workflow_dispatch:
     inputs:
-      device:
-        description: 'Device Codename'
+      MANIFEST_BRANCH:
+        description: 'TWRP Manifest Branch'
+        required: true
+        default: 'twrp-9.0'
+        type: choice
+        options:
+        - twrp-14
+        - twrp-12.1
+        - twrp-11
+        - twrp-10.0-deprecated
+        - twrp-9.0
+        - twrp-8.1
+        - twrp-8.1-macOS
+        - twrp-7.1
+        - twrp-6.0
+        - twrp-5.1
+        - twrp-4.4-deprecated
+      DEVICE_TREE:
+        description: 'Repositorio DEVICE_TREE' # Your already made Device Tree for TWRP
+        required: false
+        default: 'AnibalRa/TWRP_OFOX_PBRP_SHRP_Recovery_Builder'
+      DEVICE_TREE_BRANCH:
+        description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
+        required: false
+        default: 'main'
+      DEVICE_PATH:
+        description: 'DEVICE_PATH'
+        required: false
+        default: 'device/elephone/u3h'
+      DEVICE_NAME:
+        description: 'DEVICE_NAME'
         required: false
         default: 'u3h'
-      brand:
-        description: 'Device Brand'
+      MAKEFILE_NAME:
+        description: 'MAKEFILE_NAME (without including .mk, Example: omni_7304F)'
         required: false
-        default: 'elephone'
-      twrp_branch:
-        description: 'TWRP Branch'
+        default: 'omni_u3h'
+      BUILD_TARGET:
+        description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: false
-        default: 'twrp-10.0'
-      install:
-        description: 'Install TWRP after build?'
+        default: 'recovery'
+        type: choice
+        options:
+        - boot
+        - recovery
+        - vendorboot
+      LDCHECK:
+        description: 'Use LDCHECK'
         required: false
         default: 'false'
-
-env:
-  DEVICE: ${{ github.event.inputs.device || 'u3h' }}
-  BRAND: ${{ github.event.inputs.brand || 'elephone' }}
-  TWRP_BRANCH: ${{ github.event.inputs.twrp_branch || 'twrp-10.0' }}
-  INSTALL: ${{ github.event.inputs.install || 'false' }}
+        type: boolean
+      LDCHECKPATH:
+        description: 'Path of blobs to check' # Use it know what kind of dependencies your missing for decryption blobs.
+        required: true
+        default: 'system/bin/qseecomd'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-
+    name: Build TWRP by ${{ github.actor }}
+    runs-on: self-hosted
+    container: ubuntu:20.04
+    if: github.event.repository.owner.id == github.event.sender.id
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - name: Check Out
+      uses: actions/checkout@v4
+      
+    - name: Cleanup
+      uses: rokibhasansagar/slimhub_actions@main
+      
+    - name: Install sudo
+      run: |
+        apt-get update
+        apt-get install -y sudo
+        
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
       with:
-        submodules: recursive
+        swap-size-gb: 12
 
-    - name: Set up build environment
+    - name: Check Manifest Branch
       run: |
-        sudo apt-get update
-        sudo apt-get install -y git-core gnupg flex bison build-essential zip \
-        curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev \
-        x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils \
-        xsltproc unzip fontconfig python3 android-tools-fsutils repo
+        if [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-11' ] || [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-12.1' ] || [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-14' ]; then
+            echo "MANIFEST=https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git" >> $GITHUB_ENV
+            echo "CHECK_LEGACY_BRANCH=false" >> $GITHUB_ENV
+        else
+            echo "MANIFEST=https://github.com/mlm-games/platform_manifest_twrp_omni.git" >> $GITHUB_ENV
+            echo "CHECK_LEGACY_BRANCH=true" >> $GITHUB_ENV
+        fi
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Prepare the environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt update
+        sudo apt-get install -y tzdata
+        echo "tzdata tzdata/Areas select Europe" | sudo debconf-set-selections
+        echo "tzdata tzdata/Zones/Europe select Madrid" | sudo debconf-set-selections
+        sudo dpkg-reconfigure --frontend=noninteractive tzdata
+        sudo apt-get install -y keyboard-configuration
+        echo "keyboard-configuration keyboard-configuration/layoutcode select es" | sudo debconf-set-selections
+        echo "keyboard-configuration keyboard-configuration/variantcode select Spanish" | sudo debconf-set-selections
+        sudo dpkg-reconfigure --frontend=noninteractive keyboard-configuration
+        sudo apt -y upgrade
+        sudo apt -y install git curl gperf gcc-multilib gcc-10-multilib g++-multilib g++-10-multilib libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev tree lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc bc ccache lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libwxgtk3.0-gtk3-dev libxml2 lzop pngcrush schedtool squashfs-tools imagemagick libbz2-dev lzma ncftp qemu-user-static libstdc++-10-dev libtinfo5 libgflags-dev libncurses5 python3
+
+    - name: Install OpenJDK
+      uses: actions/setup-java@v4
       with:
-        python-version: '3.9'
+        distribution: 'zulu'
+        java-version: '8'
 
-    - name: Initialize TWRP repository
+    - name: Install Git-Repo
       run: |
-        mkdir -p twrp-build
-        cd twrp-build
-        repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b $TWRP_BRANCH --depth=1
+        mkdir -p ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        sudo ln -sf ~/bin/repo /usr/bin/repo
 
-    - name: Add MediaTek local manifest
+    - name: Initialize Repo
       run: |
-        cd twrp-build
-        mkdir -p .repo/local_manifests
-        cat > .repo/local_manifests/mediatek.xml << 'EOF'
+        mkdir android-recovery
+        cd android-recovery
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+        repo init --depth=1 -u ${{ env.MANIFEST }} -b ${{ inputs.MANIFEST_BRANCH }}
+
+    - name: Create local manifest
+      run: |
+        mkdir -p android-recovery/.repo/local_manifests
+        cat << EOF > android-recovery/.repo/local_manifests/roomservice.xml
         <?xml version="1.0" encoding="UTF-8"?>
         <manifest>
-          <project path="hardware/mediatek" name="LineageOS/android_hardware_mediatek" remote="github" revision="lineage-17.1" />
-          <project path="vendor/mediatek" name="TeamWin/android_vendor_mediatek" remote="github" revision="android-10" />
+          <project path="${{ inputs.DEVICE_PATH }}" name="${{ inputs.DEVICE_TREE }}" remote="github" revision="${{ inputs.DEVICE_TREE_BRANCH }}" />
         </manifest>
         EOF
-
-    - name: Sync sources
+      
+    - name: Repo Sync
       run: |
-        cd twrp-build
-        repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+        cd android-recovery
+        repo sync -j$(nproc --all) --force-sync
 
-    - name: Copy device tree
+    - name: Patching vendorsetup.sh
       run: |
-        cd twrp-build
-        mkdir -p device/$BRAND/$DEVICE
-        cp -r ../device/$BRAND/$DEVICE/* device/$BRAND/$DEVICE/
+        sed -i '/roomservice.py/d' android-recovery/vendor/omni/vendorsetup.sh
 
-    - name: Prepare kernel and device trees
+    - name: Installing python2 for legacy builds
+      if: env.CHECK_LEGACY_BRANCH == 'true'
       run: |
-        cd twrp-build
-        mkdir -p kernel/elephone/u3h
-        cp ../device/elephone/u3h/u3h_stock.dts kernel/elephone/u3h/
-        
-        if command -v dtc &> /dev/null; then
-            dtc -I dts -O dtb -o device/elephone/u3h/dtb.img device/elephone/u3h/u3h_stock.dts || true
-        fi
-        
-        if [ ! -f device/elephone/u3h/dtbo.img ]; then
-            dd if=/dev/zero of=device/elephone/u3h/dtbo.img bs=1024 count=64
-        fi
+        sudo apt-get -y install python2 python-is-python2
 
-    - name: Setup build environment
+    - name: Building Image 
+      shell: bash
       run: |
-        cd twrp-build
-        source build/envsetup.sh
-
-    - name: Build TWRP with MediaTek support
-      run: |
-        cd twrp-build
+        cd android-recovery
+        . build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
-        export LC_ALL=C
-        export TW_USE_TOOLBOX=true
-        export TW_INCLUDE_CRYPTO=true
-        export TW_INCLUDE_FBE=true
-        export TW_USE_FSCRYPT_POLICY=1
-        export TWRP_RECOVERY_KEYMASTER_VERSION=4
+        lunch ${{ inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ inputs.BUILD_TARGET }}image -j$(nproc --all)
+        echo "Done building your ${{ inputs.BUILD_TARGET }}.img"
+
+    - name: Set Build Date # Output will be use in Release
+      run: |
+        echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
         
-        lunch omni_$DEVICE-eng
-        mka recoveryimage -j$(nproc --all)
-
-    - name: Upload recovery image
+    - name: Upload TWRP image as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: twrp-u3h-recovery
-        path: twrp-build/out/target/product/$DEVICE/recovery.img
-
-    - name: Upload build logs and diagnostics
-      if: always()
-      uses: actions/upload-artifact@v4
+        name: TWRP-Image
+        path: android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/recovery.img
+        
+    - name: Upload to Release
+      if: success()
+      uses: softprops/action-gh-release@master
       with:
-        name: build-diagnostics-u3h
-        path: |
-          twrp-build/out/error.log
-          twrp-build/out/verbose.log
-          twrp-build/build.log
+        files: |
+          android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/${{ inputs.BUILD_TARGET }}.img
+          android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/*installer*zip
+          android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/ramdisk-recovery.*
+          android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/vbmeta.*
+        name: Unofficial TWRP for ${{ inputs.DEVICE_NAME }} // ${{ env.BUILD_DATE }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Build: ${{ inputs.MANIFEST_BRANCH }}
+          Device: [Device Tree/Branch](${{ inputs.DEVICE_TREE }}/tree/${{ inputs.DEVICE_TREE_BRANCH }})
+          Commit: Most recent [commit](${{ inputs.DEVICE_TREE }}/commit/${{ env.COMMIT_ID }}) during building.
+        prerelease: true
+
+    - name: Run LDCheck
+      if: inputs.LDCHECK == 'true'
+      run: |
+        cd tools
+        mv -n libneeds ${GITHUB_WORKSPACE}/android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/recovery/root/
+        mv -n ldcheck ${GITHUB_WORKSPACE}/android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/recovery/root/
+        cd ../android-recovery/out/target/product/${{ inputs.DEVICE_NAME }}/recovery/root
+        python3 ldcheck -p system/lib64:vendor/lib64:system/lib:vendor/lib -d ${{ inputs.LDCHECKPATH }}
+        echo "Done checking missing dependencies. Review, and reconfigure your tree."
+      continue-on-error: true
