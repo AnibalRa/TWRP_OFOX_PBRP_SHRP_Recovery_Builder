@@ -41,12 +41,20 @@ jobs:
         git clone https://github.com/AnibalRa/TWRP_OFOX_PBRP_SHRP_Recovery_Builder.git
         cd TWRP_OFOX_PBRP_SHRP_Recovery_Builder
         git submodule update --init --recursive
-            
+    
+    - name: Setup environment
+      run: |
+        echo "PATH=$PATH" >> $GITHUB_ENV
+        echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV  
+        echo "HOME=$HOME" >> $GITHUB_ENV
+        echo "LC_ALL=C" >> $GITHUB_ENV
+        echo "TERM=xterm" >> $GITHUB_ENV  
+        
     - name: Initialize TWRP build
       run: |
         cd /home/anibal/actions-runner/_work
         echo "=== INICIANDO REPO ==="
-        repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b $TWRP_BRANCH
+        /home/anibal/bin/repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp -b $TWRP_BRANCH
 
     - name: Add device tree to manifest
       run: |
