@@ -14,7 +14,7 @@ on:
       twrp_branch:
         description: 'TWRP Branch'
         required: false
-        default: 'twrp-10.0'
+        default: 'twrp-9.0'
 
 env:
   DEVICE: ${{ github.event.inputs.device || 'u3h' }}
