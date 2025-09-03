@@ -39,7 +39,8 @@ jobs:
         git clone https://github.com/AnibalRa/TWRP_OFOX_PBRP_SHRP_Recovery_Builder.git
         cd TWRP_OFOX_PBRP_SHRP_Recovery_Builder
         git submodule update --init --recursive
-        
+      working-directory: /home/anibal/actions-runner/_work
+      
     - name: Initialize TWRP build
       run: |
         cd /home/anibal/actions-runner/_work
